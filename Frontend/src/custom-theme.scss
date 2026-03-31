@@ -1,0 +1,26 @@
+$primary: #6f42c1;
+$secondary: #ff6b6b;
+$success: #20c997;
+$danger: #e63946;
+$warning: #f4a261;
+$info: #0dcaf0;
+$light: #f8f9fa;
+$dark: #212529;
+
+$border-radius: 0rem;
+$btn-border-radius: 0px;
+$font-family-base: sans-serif;
+
+@import "bootstrap/scss/bootstrap";
+
+table {
+    thead,
+    tfoot {
+        tr {
+            th,
+            td {
+                background-color: #f3f3f3 !important;
+            }
+        }
+    }
+}
