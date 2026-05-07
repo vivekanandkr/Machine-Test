@@ -1,0 +1,71 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: app-postgres
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: school_db
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    networks:
+      - app_network
+
+    restart: unless-stopped
+
+  backend:
+    image: app-backend:latest
+
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+
+    container_name: app-backend
+
+    ports:
+      - "3000:3000"
+
+    env_file:
+      - ./Backend/.env.production
+
+    depends_on:
+      - postgres
+
+    networks:
+      - app_network
+
+    restart: unless-stopped
+
+  frontend:
+    image: app-frontend:latest
+
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+
+    container_name: app-frontend
+
+    ports:
+      - "5173:80"
+
+    depends_on:
+      - backend
+
+    networks:
+      - app_network
+
+    restart: unless-stopped
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: postgres_data
