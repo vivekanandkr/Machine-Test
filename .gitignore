@@ -1,5 +1,7 @@
 Backend/node_modules
 Backend/.env
+Backend/.env.production
+Backend/dist
 Frontend/node_modules
-Frontend/.env
+Frontend/.env.*
 .vscode
