@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn, VirtualColumn } from "typeorm";
 import { Standard } from "../enums/StudentEnums";
 import { StudentMarks } from "./StudentMarks";
 
@@ -23,6 +23,11 @@ export class Student {
 
     @Column({ type: "date" })
     date_of_birth!: string;
+
+    @VirtualColumn({
+        query: (alias) => `DATE_PART('year', AGE(CURRENT_DATE, ${alias}.date_of_birth))::int`,
+    })
+    age: number;
 
     @OneToMany(() => StudentMarks, (marks: StudentMarks) => marks.student)
     marks!: StudentMarks[];

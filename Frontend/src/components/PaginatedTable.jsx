@@ -20,17 +20,17 @@ function PaginatedTable({ refreshKey, search, onEdit, onDeleted }) {
 
     const handleSort = (column) => {
         if (sortBy === column) {
-            setOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+            setOrder((prev) => (prev === "ASC" ? "DESC" : "ASC"));
         } else {
             setSortBy(column);
-            setOrder("asc");
+            setOrder("ASC");
         }
         setCurrentPage(1);
     };
 
     const renderSortIcon = (column) => {
         if (sortBy !== column) return <BsArrowDownUp size={12} className="ms-1 text-muted" />;
-        return order === "asc" ? <BsSortUp size={14} className="ms-1" /> : <BsSortDown size={14} className="ms-1" />;
+        return order === "ASC" ? <BsSortUp size={14} className="ms-1" /> : <BsSortDown size={14} className="ms-1" />;
     };
 
     const { students, total, loading } = useStudents({

@@ -14,8 +14,7 @@ export const getStudents = async (req: Request, res: Response, next: NextFunctio
 
     const queryBuilder = StudentRepository.createQueryBuilder("student");
     if (name) queryBuilder.andWhere("student.name ILIKE :name", { name: `%${name}%` });
-    queryBuilder.orderBy(`student.${sortBy}`, order);
-    queryBuilder.skip(offset).take(limit);
+    queryBuilder.orderBy(`student.${sortBy}`, order).skip(offset).take(limit);
 
     const [data, total] = await queryBuilder.getManyAndCount();
     return res.json({
@@ -46,6 +45,8 @@ export const createStudent = async (req: Request, res: Response, next: NextFunct
     const { body } = (req as any).validated as {
         body: CreateStudentDTO;
     };
+    const studentExists = await StudentRepository.findOneBy({ roll_no: body.roll_no, standard: body.standard });
+    if (studentExists) return next(new HttpError("Student already exists.", 400));
     const studentEntity = StudentRepository.create(body);
     const newStudent = await StudentRepository.save(studentEntity);
     return res.status(201).json({ success: true, data: newStudent });
@@ -56,9 +57,18 @@ export const updateStudent = async (req: Request, res: Response, next: NextFunct
         params: StudentParamsDTO;
         body: UpdateStudentDTO;
     };
-    const student = await StudentRepository.preload({ id: params.id, ...body });
+
+    const student = await StudentRepository.findOneBy({ id: params.id });
     if (!student) return next(new HttpError("Student not found", 404));
-    const updatedStudent = await StudentRepository.save(student);
+
+    const updatedRoll = body.roll_no ?? student.roll_no;
+    const updatedStandard = body.standard ?? student.standard;
+    const duplicateStudent = await StudentRepository.findOneBy({ roll_no: updatedRoll, standard: updatedStandard });
+    if (duplicateStudent && duplicateStudent.id !== student.id) {
+        return next(new HttpError("Student with this roll number and standard already exists.", 400));
+    }
+
+    const updatedStudent = await StudentRepository.save({ ...student, ...body });
     return res.status(200).json({ success: true, data: updatedStudent });
 };
 

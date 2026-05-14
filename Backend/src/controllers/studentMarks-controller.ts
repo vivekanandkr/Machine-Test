@@ -29,6 +29,16 @@ export const createStudentmark = async (req: Request, res: Response, next: NextF
     const student = await StudentRepository.findOneBy({ id: params.student_id });
     if (!student) return next(new HttpError("Student not found", 404));
 
+    const existingMark = await StudentMarksRepository.findOne({
+        where: {
+            student: { id: student.id },
+            subject: body.subject,
+        },
+    });
+    if (existingMark) {
+        return next(new HttpError("Marks for this subject already exist for the student.", 400));
+    }
+
     const studentMarkEntity = StudentMarksRepository.create({ ...body, student });
     const newMark = await StudentMarksRepository.save(studentMarkEntity);
     return res.status(201).json({ success: true, data: newMark });
@@ -39,9 +49,12 @@ export const getStudentMarksById = async (req: Request, res: Response, next: Nex
         params: StudentMarksParamsDTO;
     };
 
-    const student = await StudentRepository.findOneBy({ id: params.id });
-    if (!student) return next(new HttpError("Student not found", 404));
-    return res.json({ success: true, data: student });
+    const studentMark = await StudentMarksRepository.findOne({
+        where: { id: params.id },
+        relations: ["student"],
+    });
+    if (!studentMark) return next(new HttpError("Student Mark not found", 404));
+    return res.json({ success: true, data: studentMark });
 };
 
 export const updateStudentMark = async (req: Request, res: Response, next: NextFunction) => {
@@ -50,9 +63,24 @@ export const updateStudentMark = async (req: Request, res: Response, next: NextF
         body: UpdateStudentMarksDTO;
     };
 
-    const studentMarks = await StudentMarksRepository.preload({ id: params.id, ...body });
+    const studentMarks = await StudentMarksRepository.findOne({
+        where: { id: params.id },
+        relations: ["student"],
+    });
     if (!studentMarks) return next(new HttpError("Student Mark not found", 404));
-    const updatedStudentMark = await StudentMarksRepository.save(studentMarks);
+
+    const updatedSubject = body.subject ?? studentMarks.subject;
+    const duplicateMark = await StudentMarksRepository.findOne({
+        where: {
+            student: { id: studentMarks.student.id },
+            subject: updatedSubject,
+        },
+    });
+    if (duplicateMark && duplicateMark.id !== studentMarks.id) {
+        return next(new HttpError("Marks for this subject already exist for the student.", 400));
+    }
+
+    const updatedStudentMark = await StudentMarksRepository.save({ ...studentMarks, ...body });
     return res.status(200).json({ success: true, data: updatedStudentMark });
 };
 

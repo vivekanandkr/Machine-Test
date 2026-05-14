@@ -92,7 +92,14 @@ function StudentModal({ show, handleClose, onSuccess, studentId }) {
                         </Col>
                         <Col md={6}>
                             <FloatingLabel controlId="floatingInput" label="Date Of Birth" className="mb-3">
-                                <Form.Control name="date_of_birth" value={formData.date_of_birth} onChange={handleChange} type="date" placeholder="Date Of Birth" max={new Date().toISOString().split("T")[0]} />
+                                <Form.Control
+                                    name="date_of_birth"
+                                    value={formData.date_of_birth}
+                                    onChange={handleChange}
+                                    type="date"
+                                    placeholder="Date Of Birth"
+                                    max={new Date().toISOString().split("T")[0]}
+                                />
                             </FloatingLabel>
                         </Col>
                     </Row>
